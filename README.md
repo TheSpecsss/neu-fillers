@@ -13,7 +13,7 @@ A full-stack application for managing templates
 
 ```
 element-mover-app/
-├── frontend/          # React frontend application
+├── /                  # React frontend application
 ├── server_proxy/      # Proxy server for OpenAI API
 └── server_backend/    # Backend server with database
 ```
