@@ -1,0 +1,134 @@
+
+**Prompt:**
+
+You are given two JSON inputs:
+
+1. **Reference JSON** – contains formatting details like `position`, `size`, `fontSize`, `pdfInfo`, and `pdfText`.
+2. **Raw JSON** – contains fillable fields and their associated context.
+
+Your task is to **transform** the raw JSON into the format of the reference JSON using the following rules:
+
+---
+
+### 🔧 Rules:
+
+- Keep the `"pdfInfo"` and `"pdfText"` exactly the same as in the **Reference JSON**.
+- For each item in `"fillables"` from the Raw JSON:
+  - Create a new `"element"` object.
+  - The `"text"` should be the value of the `"context"` field from raw JSON, enclosed in brackets `[ ]`.
+  - `"width"`, `"height"`, and `"fontSize"` should match the values in the reference (`120`, `50`, `14`).
+  - `"id"` should be `"element-{n}"` starting from 1.
+  - `"position.x"` and `"position.y"` should be randomized but:
+    - Must not overlap with other elements.
+    - Must stay within a reasonable canvas size (e.g., `x` between `0` and `200`, `y` between `0` and `300`).
+    - Maintain at least 10px spacing between bounding boxes.
+
+---
+
+### 🧾 Input Fields:
+
+- Paste the **Reference JSON**:
+```json
+TODO: PASTE REFERENCE JSON HERE
+```
+
+- Paste the **Raw JSON**:
+```json
+TODO: PASTE RAW JSON HERE
+```
+
+---
+
+### ✅ Output Requirements:
+
+- Output must be **JSON only**. No comments or explanation.
+- Output must match the format of the **Reference JSON** with all new elements properly positioned.
+
+---
+
+Let me know if you want this as a script or integrated into a tool/UI.
+
+
+
+
+
+
+
+
+
+-----------------------------------------------
+### 📥 Input
+
+Reference JSON
+```json
+{
+  "elements": [
+    {
+      "id": "element-1",
+      "position": {
+        "x": 132,
+        "y": 53.350006103515625
+      },
+      "size": {
+        "width": 120,
+        "height": 50
+      },
+      "text": "element1",
+      "fontSize": 14
+    },
+    {
+      "id": "element-2",
+      "position": {
+        "x": 266,
+        "y": 50.350006103515625
+      },
+      "size": {
+        "width": 120,
+        "height": 50
+      },
+      "text": "element2",
+      "fontSize": 14
+    }
+  ],
+  "pdfInfo": {
+    "filename": "templateTest.pdf",
+    "checksum": "04d04cd0"
+  },
+  "pdfText": "Page 1:\nDear\n\nPlease accept this letter as an excuse for my absence on Date of\nAbsencel. I was unable to attend               due to\n\nI understand the importance of      and apologize for any\ninconvenience my absence may have caused. I will make sure to\n\nThank you for your understanding\n\nSincerely"
+}
+```
+
+New JSON
+```json
+{
+  "fileName": "templateTest.pdf",
+  "fillables": [
+    {
+      "id": 1,
+      "field": "Date of Absence",
+      "context": "Requesting the date of absence"
+    },
+    {
+      "id": 2,
+      "field": "due to",
+      "context": "Asking for the reason of absence"
+    },
+    {
+      "id": 3,
+      "field": "importance of",
+      "context": "Seeking understanding of the importance of the event"
+    },
+    {
+      "id": 4,
+      "field": "inconvenience my absence may have caused",
+      "context": "Acknowledging the inconvenience caused by absence"
+    },
+    {
+      "id": 5,
+      "field": "Sincerely",
+      "context": "Closing of the letter"
+    }
+  ]
+}
+```
+

@@ -1,0 +1,47 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id        Int              @id @default(autoincrement())
+  first_name     String           @db.VarChar(255)
+  last_name      String           @db.VarChar(255)
+  email          String           @unique @db.VarChar(255)
+  password       String           @db.VarChar(255)
+  role_access    Int              @default(98)
+  createdAt      DateTime         @db.Timestamptz(6)
+  updatedAt      DateTime         @db.Timestamptz(6)
+  user_templates UserTemplate[]
+}
+
+model Template {
+  template_id           Int              @id @default(autoincrement())
+  template_name         String           @db.VarChar(255)
+  template_desc         String?          @db.VarChar(255)
+  template_type         String           @db.VarChar(255)
+  pdfPath              String?          @db.VarChar(255)
+  template_baseconfig   Json?           @db.JsonB
+  createdAt            DateTime         @db.Timestamptz(6)
+  updatedAt            DateTime         @db.Timestamptz(6)
+  user_templates       UserTemplate[]
+}
+
+model UserTemplate {
+  utemplate_id     Int        @id @default(autoincrement())
+  user_id          Int
+  template_id      Int
+  template_config   Json?     @db.JsonB
+  createdAt        DateTime   @db.Timestamptz(6)
+  updatedAt        DateTime   @db.Timestamptz(6)
+  user             User       @relation(fields: [user_id], references: [user_id], onDelete: Cascade)
+  template         Template   @relation(fields: [template_id], references: [template_id], onDelete: Cascade)
+
+  @@index([user_id])
+  @@index([template_id])
+}
