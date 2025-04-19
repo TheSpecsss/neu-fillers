@@ -1,11 +1,24 @@
 import dotenv from 'dotenv';
+import { z } from 'zod';
 
 // Load environment variables
 dotenv.config();
 
-// Frontend URL
-const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
+// Environment variable schema
+const envSchema = z.object({
+  PROXY_API_URL: z.string().url(),
+  PROXY_API_KEY: z.string().min(1),
+  PROXY_PORT: z.string().transform(Number),
+  PROXY_PROVIDER: z.enum(['openai', 'openrouter']),
+  ALLOWED_ORIGINS: z.string().optional(),
+  RATE_LIMIT_WINDOW_MS: z.string().default('60000').transform(Number),
+  RATE_LIMIT_MAX: z.string().default('60').transform(Number),
+});
 
+// Parse and validate environment variables
+const env = envSchema.parse(process.env);
+
+// Configuration types
 interface ServerConfig {
   port: number;
   rateLimit: {
@@ -19,49 +32,42 @@ interface CorsConfig {
   credentials: boolean;
 }
 
-interface OpenRouterConfig {
+interface ApiConfig {
   baseUrl: string;
-  apiKey: string | undefined;
-  headers: {
-    'HTTP-Referer': string;
-    'X-Title': string;
-  };
-  models: {
-    default: string;
-    embedding: string;
-  };
+  apiKey: string;
+  provider: 'openai' | 'openrouter';
+  headers: Record<string, string>;
 }
 
 interface Config {
   server: ServerConfig;
   cors: CorsConfig;
-  openRouter: OpenRouterConfig;
+  api: ApiConfig;
 }
 
+// Default allowed origins
+const defaultOrigins = ['http://localhost:3000', 'http://localhost:8080'];
+
+// Main configuration
 export const config: Config = {
   server: {
-    port: Number(process.env.PORT) || 3001,
+    port: env.PROXY_PORT,
     rateLimit: {
-      windowMs: 60 * 1000, // 1 minute
-      max: Number(process.env.RATE_LIMIT) || 60
-    }
+      windowMs: env.RATE_LIMIT_WINDOW_MS,
+      max: env.RATE_LIMIT_MAX,
+    },
   },
   cors: {
-    origins: process.env.ALLOWED_ORIGINS
-      ? process.env.ALLOWED_ORIGINS.split(',')
-      : [FRONTEND_URL],
-    credentials: true
+    origins: env.ALLOWED_ORIGINS ? env.ALLOWED_ORIGINS.split(',') : defaultOrigins,
+    credentials: true,
   },
-  openRouter: {
-    baseUrl: 'https://openrouter.ai/api/v1',
-    apiKey: process.env.OPENAI_API_KEY,
+  api: {
+    baseUrl: env.PROXY_API_URL,
+    apiKey: env.PROXY_API_KEY,
+    provider: env.PROXY_PROVIDER,
     headers: {
-      'HTTP-Referer': FRONTEND_URL,
-      'X-Title': process.env.X_TITLE || 'Element Mover App'
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${env.PROXY_API_KEY}`,
     },
-    models: {
-      default: process.env.DEFAULT_MODEL || 'openai/gpt-3.5-turbo',
-      embedding: process.env.EMBEDDING_MODEL || 'openai/text-embedding-ada-002'
-    }
-  }
+  },
 }; 

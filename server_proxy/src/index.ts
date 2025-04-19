@@ -2,21 +2,39 @@ import express from 'express';
 import cors from 'cors';
 import rateLimit from 'express-rate-limit';
 import { config } from './config.js';
-import { errorHandler } from './middleware.js';
 import apiRoutes from './routes/api.js';
+import { errorHandler } from './middleware.js';
 
 const app = express();
 
-// Configure rate limiting
-const limiter = rateLimit(config.server.rateLimit);
-
 // Middleware
-app.use(cors(config.cors));
 app.use(express.json());
-app.use(limiter);
+
+// CORS configuration - more permissive in development
+app.use(cors({
+  origin: true, // Allow all origins in development
+  credentials: true,
+  methods: ['GET', 'POST', 'OPTIONS', 'PUT', 'DELETE', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600, // Cache preflight requests for 10 minutes
+}));
+
+// Log all requests for debugging
+app.use((req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.url}`);
+  console.log('Headers:', req.headers);
+  next();
+});
+
+// Rate limiting
+app.use(rateLimit({
+  windowMs: config.server.rateLimit.windowMs,
+  max: config.server.rateLimit.max,
+}));
 
 // Routes
-app.use('/api/openai', apiRoutes);
+app.use('/api', apiRoutes);
 
 // Error handling
 app.use(errorHandler);
@@ -24,9 +42,9 @@ app.use(errorHandler);
 // Start server
 const server = app.listen(config.server.port, () => {
   console.log(`Proxy server running on port ${config.server.port}`);
-  console.log(`Allowed origins: ${config.cors.origins.join(', ')}`);
-  console.log(`Default model: ${config.openRouter.models.default}`);
-  console.log(`Embedding model: ${config.openRouter.models.embedding}`);
+  console.log(`Provider: ${config.api.provider}`);
+  console.log(`API URL: ${config.api.baseUrl}`);
+  console.log('CORS: Enabled for all origins');
 });
 
 // Handle server errors

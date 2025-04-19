@@ -9,9 +9,9 @@ import {
 import Dashboard from "./components/Dashboard";
 import Login from "./components/Login";
 import "./App.css";
-import { Toaster as Sonner } from "@/components/ui/sonner";
-import { Toaster } from "@/components/ui/toaster";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { Toaster as Sonner } from "@/shared/components/ui/sonner";
+import { Toaster } from "@/shared/components/ui/toaster";
+import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Editor from "./pages/Editor";
 import NotFound from "./pages/NotFound";

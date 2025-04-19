@@ -1,11 +1,10 @@
 import type { Request, Response, NextFunction } from 'express';
+import { config } from './config.js';
 
 // Extend Express Request type to include our custom properties
-declare global {
-  namespace Express {
-    interface Request {
-      apiKey?: string;
-    }
+declare module 'express' {
+  interface Request {
+    apiKey?: string;
   }
 }
 
@@ -14,31 +13,47 @@ export const authenticateRequest = (
   req: Request,
   res: Response,
   next: NextFunction
-): void => {
-  console.log('Received request headers:', req.headers);
-  const apiKey = req.headers['x-api-key'];
-  if (!apiKey) {
-    console.log('No x-api-key header found in request');
-    res.status(401).json({
-      error: 'Missing x-api-key header. Please provide your API key in the x-api-key header.'
+) => {
+  const authHeader = req.headers.authorization;
+  
+  if (!authHeader) {
+    return res.status(401).json({
+      error: {
+        message: 'Authorization header is required',
+        type: 'authentication_error',
+      },
     });
-    return;
   }
-  console.log('API key found in request');
-  // Store the API key for use in the route handlers
-  req.apiKey = typeof apiKey === 'string' ? apiKey : apiKey[0];
+
+  const [type, token] = authHeader.split(' ');
+
+  if (type !== 'Bearer' || !token) {
+    return res.status(401).json({
+      error: {
+        message: 'Invalid authorization header format',
+        type: 'authentication_error',
+      },
+    });
+  }
+
+  // Store the API key in the request object for later use
+  req.apiKey = token;
   next();
 };
 
 // Error handling middleware
 export const errorHandler = (
-  err: Error & { status?: number },
-  req: Request,
+  err: Error,
+  _req: Request,
   res: Response,
-  next: NextFunction
-): void => {
+  _next: NextFunction
+) => {
   console.error('API Error:', err);
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal Server Error'
+
+  res.status(500).json({
+    error: {
+      message: err.message || 'Internal server error',
+      type: 'api_error',
+    },
   });
 }; 
