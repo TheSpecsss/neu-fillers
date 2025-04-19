@@ -1,6 +1,7 @@
 import { calculateChecksum } from "@/shared/utils/fileUtils";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { pdfjsLib } from "@/shared/config/pdfjs";
 
 interface UsePdfHandlerProps {
 	initialPdfData?: ArrayBuffer | null;
@@ -52,14 +53,25 @@ export const usePdfHandler = ({
 
 			// Read file as ArrayBuffer for PDF.js
 			const reader = new FileReader();
-			reader.onload = (event) => {
+			reader.onload = async (event) => {
 				if (event.target?.result) {
-					setPdfData(event.target.result as ArrayBuffer);
-					setPdfInfo({
-						filename: file.name,
-						checksum: checksum,
-					});
-					toast.success(`PDF uploaded: ${file.name}`);
+					const arrayBuffer = event.target.result as ArrayBuffer;
+					try {
+						// Load the PDF document
+						const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+						const pdf = await loadingTask.promise;
+						
+						setPdfData(arrayBuffer);
+						setPdfInfo({
+							filename: file.name,
+							checksum: checksum,
+						});
+						setPdfPages(pdf.numPages);
+						toast.success(`PDF uploaded: ${file.name}`);
+					} catch (error) {
+						console.error("Error loading PDF:", error);
+						toast.error("Error loading PDF file");
+					}
 				}
 			};
 			reader.readAsArrayBuffer(file);

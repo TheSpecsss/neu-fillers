@@ -14,7 +14,7 @@ export default defineConfig(({ mode }) => {
     plugins: [react()],
     resolve: {
       alias: {
-        '@': fileURLToPath(new URL('./src', import.meta.url)),
+        '@': path.resolve(__dirname, './src'),
       },
     },
     server: {
@@ -45,7 +45,7 @@ export default defineConfig(({ mode }) => {
             });
             proxy.on('proxyReq', (proxyReq, req, res) => {
               // Forward the API key from the original request
-              const apiKey = req.headers['authorization']?.replace('Bearer ', '');
+              const apiKey = req.headers.authorization?.replace('Bearer ', '');
               if (apiKey) {
                 proxyReq.setHeader('Authorization', `Bearer ${apiKey}`);
               }
@@ -68,5 +68,19 @@ export default defineConfig(({ mode }) => {
         VITE_APP_TITLE: JSON.stringify(env.VITE_APP_TITLE),
       },
     },
+    optimizeDeps: {
+      include: ['pdfjs-dist'],
+    },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks: {
+            'pdfjs-dist': ['pdfjs-dist'],
+          },
+        },
+      },
+    },
+    publicDir: 'public',
+    assetsInclude: ['**/*.worker.js'],
   };
 });

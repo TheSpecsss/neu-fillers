@@ -6,17 +6,17 @@ import {
 	Routes,
 	useLocation,
 } from "react-router-dom";
-import Dashboard from "./components/Dashboard";
-import Login from "./components/Login";
+import { Dashboard } from "./features/dashboard/components/Dashboard";
+import { Login } from "./features/auth/components/Login";
 import "./App.css";
 import { Toaster as Sonner } from "@/shared/components/ui/sonner";
 import { Toaster } from "@/shared/components/ui/toaster";
 import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import Editor from "./pages/Editor";
-import NotFound from "./pages/NotFound";
-import Process from "./pages/Process";
-import Upload from "./pages/Upload";
+import { Editor } from "./features/editor/components/Editor";
+import { NotFound } from "./features/not-found/components/NotFound";
+import { Process } from "./features/process/components/Process";
+import { Upload } from "./features/upload/components/Upload";
 
 const queryClient = new QueryClient();
 

@@ -3,7 +3,7 @@ import type { PDFDocumentProxy } from "pdfjs-dist/types/src/display/api";
 import React, { useEffect, useRef, useCallback, useMemo } from "react";
 
 // Set the worker source to use a local file
-pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf-worker/pdf.worker.min.js";
+pdfjsLib.GlobalWorkerOptions.workerSrc = "/pdf.worker.min.js";
 
 interface PdfViewerProps {
 	pdfData: ArrayBuffer | null;
